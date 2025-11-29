@@ -6,3 +6,96 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+model User {
+  id           String    @id @default(uuid())
+  name         String    @db.VarChar(120)
+  email        String?   @unique @db.VarChar(250)
+  createdAtUTC DateTime  @default(now()) @map("created_at_utc")
+  updatedAtUTC DateTime  @updatedAt @map("updated_at_utc")
+
+  messages     Message[]
+  ownedRooms   Room[]    @relation("OwnerRelation")
+  rooms        Room[]
+
+  @@index([email])
+  @@map("users")
+}
+
+model Room {
+  id           String    @id @default(uuid())
+  ownerId      String?   @map("owner_id")
+  userId       String?
+  name         String    @unique @db.VarChar(100)
+  createdAtUTC DateTime  @default(now()) @map("created_at_utc")
+  updatedAtUTC DateTime  @updatedAt @map("updated_at_utc")
+
+  owner        User?     @relation("OwnerRelation", fields: [ownerId], references: [id])
+  messages     Message[]
+  ideas        Idea[]
+  user         User?     @relation(fields: [userId], references: [id])
+
+  @@index([ownerId])
+  @@map("rooms")
+}
+
+model Message {
+  id           String       @id @default(uuid())
+  roomId       String       @map("room_id")
+  userId       String?      @map("user_id")
+  content      String       @db.Text
+  role         MessageRole  @default(USER)
+  createdAtUTC DateTime     @default(now()) @map("created_at_utc")
+  updatedAtUTC DateTime     @updatedAt @map("updated_at_utc")
+
+  room         Room         @relation(fields: [roomId], references: [id])
+  user         User?        @relation(fields: [userId], references: [id])
+  tags         MessageTag[]
+
+  @@index([roomId])
+  @@index([userId])
+  @@map("messages")
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+}
+
+model Idea {
+  id           String   @id @default(uuid())
+  roomId       String   @map("room_id")
+  title        String   @db.VarChar(100)
+  description  String   @db.Text
+  score        Int      @default(0)
+  aiSummary    String?  @map("ai_summary")
+  createdAtUTC DateTime @default(now()) @map("created_at_utc")
+  updatedAtUTC DateTime @updatedAt @map("updated_at_utc")
+
+  room         Room     @relation(fields: [roomId], references: [id])
+
+  @@index([roomId])
+  @@map("ideas")
+}
+
+model Tag {
+  id           String       @id @default(uuid())
+  name         String       @unique @db.VarChar(50)
+  createdAtUTC DateTime     @default(now()) @map("created_at_utc")
+  updatedAtUTC DateTime     @updatedAt @map("updated_at_utc")
+
+  messages     MessageTag[]
+
+  @@map("tags")
+}
+
+model MessageTag {
+  messageId String @map("message_id")
+  tagId     String @map("tag_id")
+
+  message   Message @relation(fields: [messageId], references: [id])
+  tag       Tag     @relation(fields: [tagId], references: [id])
+
+  @@id([messageId, tagId])
+  @@map("message_tags")
+}
