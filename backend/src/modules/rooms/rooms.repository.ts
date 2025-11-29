@@ -12,10 +12,21 @@ export class RoomsRepository {
   }
 
   async findAll() {
-    return prisma.room.findMany({
-      orderBy: { createdAtUTC: "desc" },
+    return await prisma.room.findMany({
+      include: {
+        owner: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAtUTC: "desc",
+      },
     });
-  }
+}
 
   async findById(roomId: string) {
     return prisma.room.findUnique({

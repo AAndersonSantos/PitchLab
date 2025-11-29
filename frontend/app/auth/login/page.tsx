@@ -24,13 +24,15 @@ export default function RegisterPage() {
     }
 
    try {
-      const user = await apiLogin({
+      const response = await apiLogin({
         email: email.trim(),
         password_hash: password.trim(),
       });
 
-      setUser(user);
+      localStorage.setItem("token", response.token);
+      setUser(response.user);
       router.push("/rooms");
+      
     } catch (error) {
       console.error("Erro no registro:", error);
       alert("Erro ao registrar. Tente novamente.");
@@ -38,7 +40,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <FormContainer title="Criar Conta">
+    <FormContainer title="Login">
       <form onSubmit={handleSubmit}>
         <Input label="Email" type="email" value={email} onChange={e => setEmail(e.target.value)} />
         <Input label="Password" type="password" value={password} onChange={e => setPassword(e.target.value)} />
