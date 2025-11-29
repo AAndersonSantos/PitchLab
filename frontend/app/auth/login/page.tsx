@@ -30,6 +30,7 @@ export default function RegisterPage() {
       });
 
       localStorage.setItem("token", response.token);
+      localStorage.setItem("userId", response.user.id);
       setUser(response.user);
       router.push("/rooms");
       

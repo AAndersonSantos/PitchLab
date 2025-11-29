@@ -8,50 +8,43 @@ const messageService = new MessagesService();
 
 export function initSocket(server: HTTPServer) {
   io = new IOServer(server, {
-    cors: {
-      origin: "*",
-    },
+    cors: { origin: "*" },
   });
 
-  console.log("🔥 Socket.io inicializado!");
+  console.log("Socket.io inicializado!");
 
   io.on("connection", (socket: Socket) => {
-    console.log(`🟢 Novo cliente conectado: ${socket.id}`);
+    console.log(`Novo cliente conectado: ${socket.id}`);
 
-    // Evento de entrar na sala
     socket.on("room:join", (roomId: string) => {
       socket.join(roomId);
-      console.log(`📌 Socket ${socket.id} entrou na sala ${roomId}`);
+      console.log(`Socket ${socket.id} entrou na sala ${roomId}`);
+    });
 
-      // Notificar os outros da sala que um novo usuário chegou
-      /*socket.to(roomId).emit("room:join", {
-        socketId: socket.id,
-        roomId,
-      });*/
+    socket.on("message:send", async ({ roomId, userId, content }) => {
+      if (!roomId || !userId || !content?.trim()) {
+        return socket.emit("message:error", "Dados inválidos");
+      }
 
-      socket.on("message:send", async ({ roomId, userId, content }) => {
+      console.log(`${userId} enviando mensagem na sala ${roomId}: ${content}`);
+
       try {
         const newMessage = await messageService.create({
           roomId,
           userId,
-          content,
+          content: content.trim(),
         });
 
         io.to(roomId).emit("message:new", newMessage);
-      } catch (err) {
-        console.error(err);
-        const errorMessage = typeof err === "object" && err !== null && "message" in err
-          ? (err as { message: string }).message
-          : "Unknown error";
-        socket.emit("message:error", errorMessage);
+        console.log(`Mensagem enviada na sala ${roomId}:`, content);
+      } catch (err: any) {
+        console.error("Erro ao salvar mensagem:", err);
+        socket.emit("message:error", err.message || "Erro ao enviar");
       }
     });
 
-
-    });
-
     socket.on("disconnect", () => {
-      console.log(`🔴 Cliente desconectado: ${socket.id}`);
+      console.log(`Cliente desconectado: ${socket.id}`);
     });
   });
 
