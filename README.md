@@ -72,6 +72,20 @@ Foi possível implementar as funcionalidades principais que tornam o projeto fun
 cd backend
 npm install
 ```
+## Varieveis de ambiente .env.example
+
+Crie um arquivo .env na raiz do projeto backend
+```
+PORT=
+APP_ORIGIN=
+DATABASE_URL=""
+JWT_SECRET=
+
+# postgresql://USUÁRIO:SENHA@HOST:PORTA/NOME_DO_BANCO?schema=public
+#        ↑          ↑         ↑           ↑         ↑
+#     usuário     senha      host       porta   nome do banco
+```
+
 ### Subir o banco de dados (PostgreSQL)
 ```
 docker-compose up -d
@@ -79,6 +93,10 @@ docker-compose up -d
 ### Gerar e rodar as migrations do Prisma
 ```
 npx prisma migrate dev --name init
+```
+### Gerar e rodar as migrations do Prisma
+```
+npx prisma generate
 ```
 
 ### **Iniciar o projeto**
@@ -90,6 +108,10 @@ npm run dev
 ```bash
 cd frontend
 npm install
+```
+### **Iniciar o projeto**
+```bash
+npm run dev
 ```
 
 ---
